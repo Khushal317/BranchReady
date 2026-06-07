@@ -73,19 +73,19 @@
 
 ## Phase 7: Admin Dashboard
 
-- [ ] Add admin login screen
-- [ ] Protect admin dashboard
-- [ ] Add bank create/edit
-- [ ] Add process create/edit
-- [ ] Add process verification controls
-- [ ] Add feedback review
+- [x] Add admin login screen
+- [x] Protect admin dashboard
+- [x] Add bank create/edit
+- [x] Add process create/edit
+- [x] Add process verification controls
+- [x] Add feedback review
 
 ## Phase 8: Feedback System
 
-- [ ] Add public feedback form
-- [ ] Store feedback in database
-- [ ] Show feedback in admin dashboard
-- [ ] Allow feedback status updates
+- [x] Add public feedback form
+- [x] Store feedback in database
+- [x] Show feedback in admin dashboard
+- [x] Allow feedback status updates
 
 ## Phase 9: Verification And Hardening
 

@@ -127,6 +127,16 @@ h1 {
   max-width: 720px;
 }
 
+.context-note {
+  background: #f8fafc;
+  border: 1px solid #dde3ea;
+  border-radius: 6px;
+  color: #415161;
+  margin-top: 18px;
+  max-width: 720px;
+  padding: 10px 12px;
+}
+
 .assistant-form {
   display: grid;
   gap: 18px;
@@ -147,6 +157,7 @@ label {
 }
 
 select,
+input,
 textarea {
   border: 1px solid #bac7d5;
   border-radius: 6px;
@@ -167,6 +178,51 @@ textarea {
   color: #9b1c1c;
   margin: 0;
   padding: 10px 12px;
+}
+
+.form-success {
+  background: #edf9f0;
+  border: 1px solid #b9dfc2;
+  border-radius: 6px;
+  color: #235c32;
+  margin: 16px 0 0;
+  padding: 10px 12px;
+}
+
+.admin-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+}
+
+.admin-section {
+  border-top: 1px solid #dde3ea;
+  margin-top: 32px;
+  padding-top: 28px;
+}
+
+.admin-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 18px;
+}
+
+.admin-grid label:has(textarea),
+.admin-grid button {
+  grid-column: 1 / -1;
+}
+
+.feedback-list {
+  display: grid;
+  gap: 14px;
+}
+
+.feedback-item {
+  border: 1px solid #dde3ea;
+  border-radius: 8px;
+  padding: 16px;
 }
 
 .answer-panel {
@@ -257,5 +313,13 @@ textarea {
 
   .answer-heading {
     flex-direction: column;
+  }
+
+  .admin-header {
+    flex-direction: column;
+  }
+
+  .admin-grid {
+    grid-template-columns: 1fr;
   }
 }
