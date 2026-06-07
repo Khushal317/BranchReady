@@ -89,15 +89,15 @@
 
 ## Phase 9: Verification And Hardening
 
-- [ ] Verify backend health route
-- [ ] Verify migrations
-- [ ] Verify seed data
-- [ ] Verify customer assistant stored answers
-- [ ] Verify unavailable answer behavior
-- [ ] Verify employee copilot stored answers
-- [ ] Verify admin process edits
-- [ ] Verify feedback flow
-- [ ] Verify no invented banking facts
+- [x] Verify backend health route
+- [x] Verify migrations
+- [x] Verify seed data
+- [x] Verify customer assistant stored answers
+- [x] Verify unavailable answer behavior
+- [x] Verify employee copilot stored answers
+- [x] Verify admin process edits
+- [x] Verify feedback flow
+- [x] Verify no invented banking facts
 
 ## Phase 10: Deployment Preparation
 
