@@ -34,42 +34,42 @@
 
 ## Phase 3: Strict Search And Answer Rules
 
-- [ ] Add stored-data-only matching behavior
-- [ ] Add unavailable response for missing process data
-- [ ] Always return last verified date
-- [ ] Always return confidence status
-- [ ] Always return branch variation warning
-- [ ] Prevent invented banking facts
+- [x] Add stored-data-only matching behavior
+- [x] Add unavailable response for missing process data
+- [x] Always return last verified date
+- [x] Always return confidence status
+- [x] Always return branch variation warning
+- [x] Prevent invented banking facts
 
 ## Phase 4: React Frontend Foundation
 
-- [ ] Create React frontend structure
-- [ ] Add app routing
-- [ ] Add API client
-- [ ] Add basic layout
-- [ ] Add landing page shell
-- [ ] Add customer assistant shell
-- [ ] Add employee copilot shell
-- [ ] Add admin shell
-- [ ] Add feedback shell
+- [x] Create React frontend structure
+- [x] Add app routing
+- [x] Add API client
+- [x] Add basic layout
+- [x] Add landing page shell
+- [x] Add customer assistant shell
+- [x] Add employee copilot shell
+- [x] Add admin shell
+- [x] Add feedback shell
 
 ## Phase 5: Customer Assistant
 
-- [ ] Add bank selection
-- [ ] Add process selection
-- [ ] Add natural question input
-- [ ] Show process answer from backend
-- [ ] Show unavailable state
-- [ ] Add feedback action
+- [x] Add bank selection
+- [x] Add process selection
+- [x] Add natural question input
+- [x] Show process answer from backend
+- [x] Show unavailable state
+- [x] Add feedback action
 
 ## Phase 6: Employee Copilot
 
-- [ ] Add bank selection
-- [ ] Add process search
-- [ ] Show employee checklist
-- [ ] Show documents to verify
-- [ ] Show customer explanation
-- [ ] Show escalation note
+- [x] Add bank selection
+- [x] Add process search
+- [x] Show employee checklist
+- [x] Show documents to verify
+- [x] Show customer explanation
+- [x] Show escalation note
 
 ## Phase 7: Admin Dashboard
 
