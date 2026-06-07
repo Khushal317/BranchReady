@@ -38,6 +38,7 @@ class ProcessAnswer(BaseModel):
     employee_steps: str | None = None
     common_rejection_reasons: str | None = None
     escalation_required: str | None = None
+    branch_variation_note: str | None = None
     public_notes: str | None = None
 
 

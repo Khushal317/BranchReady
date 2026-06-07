@@ -6,10 +6,16 @@ from app.api.deps import get_database, require_admin
 from app.core.config import settings
 from app.core.exceptions import AppError
 from app.models.bank import Bank
+from app.models.contributor import Contributor
 from app.models.feedback import Feedback
 from app.models.process import Process
 from app.schemas.auth import AdminLoginRequest, AdminLoginResponse
 from app.schemas.bank import BankCreate, BankRead, BankUpdate
+from app.schemas.contributor import (
+    ContributorCreate,
+    ContributorRead,
+    ContributorUpdate,
+)
 from app.schemas.feedback import FeedbackRead, FeedbackUpdate
 from app.schemas.process import ProcessCreate, ProcessRead, ProcessUpdate
 
@@ -104,6 +110,53 @@ def update_bank(
     db.commit()
     db.refresh(bank)
     return bank
+
+
+@router.get(
+    "/contributors",
+    response_model=list[ContributorRead],
+    dependencies=[Depends(require_admin)],
+)
+def list_contributors(db: Session = Depends(get_database)) -> list[Contributor]:
+    return list(db.scalars(select(Contributor).order_by(Contributor.name)).all())
+
+
+@router.post(
+    "/contributors",
+    response_model=ContributorRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin)],
+)
+def create_contributor(
+    payload: ContributorCreate, db: Session = Depends(get_database)
+) -> Contributor:
+    contributor = Contributor(**payload.model_dump())
+    db.add(contributor)
+    db.commit()
+    db.refresh(contributor)
+    return contributor
+
+
+@router.put(
+    "/contributors/{contributor_id}",
+    response_model=ContributorRead,
+    dependencies=[Depends(require_admin)],
+)
+def update_contributor(
+    contributor_id: int,
+    payload: ContributorUpdate,
+    db: Session = Depends(get_database),
+) -> Contributor:
+    contributor = db.get(Contributor, contributor_id)
+    if contributor is None:
+        raise AppError("Contributor not found.", status.HTTP_404_NOT_FOUND)
+
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(contributor, field, value)
+
+    db.commit()
+    db.refresh(contributor)
+    return contributor
 
 
 @router.get(

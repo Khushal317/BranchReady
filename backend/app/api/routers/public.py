@@ -119,6 +119,7 @@ def get_process_answer(
         employee_steps=exact_match.employee_steps,
         common_rejection_reasons=exact_match.common_rejection_reasons,
         escalation_required=exact_match.escalation_required,
+        branch_variation_note=exact_match.branch_variation_note,
         public_notes=exact_match.public_notes,
     )
 

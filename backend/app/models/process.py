@@ -29,6 +29,7 @@ class Process(Base):
     employee_steps: Mapped[str | None] = mapped_column(Text)
     common_rejection_reasons: Mapped[str | None] = mapped_column(Text)
     escalation_required: Mapped[str | None] = mapped_column(Text)
+    branch_variation_note: Mapped[str | None] = mapped_column(Text)
     last_verified_date: Mapped[date | None] = mapped_column(Date)
     verified_by: Mapped[str | None] = mapped_column(String(200))
     source_type: Mapped[str | None] = mapped_column(String(120))

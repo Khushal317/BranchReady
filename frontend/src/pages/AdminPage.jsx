@@ -30,6 +30,7 @@ const emptyProcessForm = {
   employee_steps: "",
   common_rejection_reasons: "",
   escalation_required: "",
+  branch_variation_note: "",
   last_verified_date: "",
   verified_by: "",
   source_type: "",
@@ -37,6 +38,17 @@ const emptyProcessForm = {
   status: "active",
   internal_notes: "",
   public_notes: "",
+};
+
+const emptyContributorForm = {
+  name: "",
+  role: "",
+  bank: "",
+  branch_city: "",
+  contact: "",
+  contribution_count: 0,
+  payment_status: "",
+  trust_score: 0,
 };
 
 function authHeaders(token) {
@@ -83,6 +95,16 @@ function TextArea({ value, onChange, required = false, rows = 3 }) {
   );
 }
 
+function Checkbox({ checked, onChange }) {
+  return (
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={(event) => onChange(event.target.checked)}
+    />
+  );
+}
+
 export function AdminPage() {
   const [token, setToken] = useState(
     () => window.localStorage.getItem("branchready_admin_token") || ""
@@ -90,13 +112,37 @@ export function AdminPage() {
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });
   const [banks, setBanks] = useState([]);
   const [processes, setProcesses] = useState([]);
+  const [contributors, setContributors] = useState([]);
   const [feedback, setFeedback] = useState([]);
   const [selectedBankId, setSelectedBankId] = useState("");
   const [selectedProcessId, setSelectedProcessId] = useState("");
+  const [selectedContributorId, setSelectedContributorId] = useState("");
+  const [processSearch, setProcessSearch] = useState("");
   const [bankForm, setBankForm] = useState(emptyBankForm);
   const [processForm, setProcessForm] = useState(emptyProcessForm);
+  const [contributorForm, setContributorForm] = useState(emptyContributorForm);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  const filteredProcesses = useMemo(() => {
+    const search = processSearch.trim().toLowerCase();
+    if (!search) {
+      return processes;
+    }
+
+    return processes.filter((process) =>
+      [
+        process.process_name,
+        process.customer_friendly_title,
+        process.employee_friendly_title,
+        process.process_category,
+        process.confidence_status,
+        process.status,
+      ]
+        .filter(Boolean)
+        .some((value) => value.toLowerCase().includes(search))
+    );
+  }, [processSearch, processes]);
 
   const selectedBank = useMemo(
     () => banks.find((bank) => String(bank.id) === selectedBankId),
@@ -108,20 +154,31 @@ export function AdminPage() {
     [processes, selectedProcessId]
   );
 
+  const selectedContributor = useMemo(
+    () =>
+      contributors.find(
+        (contributor) => String(contributor.id) === selectedContributorId
+      ),
+    [contributors, selectedContributorId]
+  );
+
   async function loadAdminData(activeToken = token) {
     if (!activeToken) {
       return;
     }
 
     const headers = authHeaders(activeToken);
-    const [bankData, processData, feedbackData] = await Promise.all([
-      apiRequest("/api/banks"),
-      apiRequest("/api/admin/processes", { headers }),
-      apiRequest("/api/admin/feedback", { headers }),
-    ]);
+    const [bankData, processData, contributorData, feedbackData] =
+      await Promise.all([
+        apiRequest("/api/banks"),
+        apiRequest("/api/admin/processes", { headers }),
+        apiRequest("/api/admin/contributors", { headers }),
+        apiRequest("/api/admin/feedback", { headers }),
+      ]);
 
     setBanks(bankData);
     setProcesses(processData);
+    setContributors(contributorData);
     setFeedback(feedbackData);
   }
 
@@ -161,9 +218,28 @@ export function AdminPage() {
       ...emptyProcessForm,
       ...selectedProcess,
       bank_id: String(selectedProcess.bank_id),
+      branch_variation_note: selectedProcess.branch_variation_note || "",
       last_verified_date: selectedProcess.last_verified_date || "",
     });
   }, [selectedProcess]);
+
+  useEffect(() => {
+    if (!selectedContributor) {
+      setContributorForm(emptyContributorForm);
+      return;
+    }
+
+    setContributorForm({
+      name: selectedContributor.name || "",
+      role: selectedContributor.role || "",
+      bank: selectedContributor.bank || "",
+      branch_city: selectedContributor.branch_city || "",
+      contact: selectedContributor.contact || "",
+      contribution_count: selectedContributor.contribution_count || 0,
+      payment_status: selectedContributor.payment_status || "",
+      trust_score: selectedContributor.trust_score || 0,
+    });
+  }, [selectedContributor]);
 
   async function handleLogin(event) {
     event.preventDefault();
@@ -188,6 +264,7 @@ export function AdminPage() {
     setToken("");
     setBanks([]);
     setProcesses([]);
+    setContributors([]);
     setFeedback([]);
     setMessage("");
     setError("");
@@ -249,6 +326,39 @@ export function AdminPage() {
     }
   }
 
+  async function saveContributor(event) {
+    event.preventDefault();
+
+    try {
+      setError("");
+      setMessage("");
+      const payload = cleanPayload({
+        ...contributorForm,
+        contribution_count: Number(contributorForm.contribution_count) || 0,
+        trust_score: Number(contributorForm.trust_score) || 0,
+      });
+      const path = selectedContributorId
+        ? `/api/admin/contributors/${selectedContributorId}`
+        : "/api/admin/contributors";
+      const method = selectedContributorId ? "PUT" : "POST";
+
+      await apiRequest(path, {
+        method,
+        headers: authHeaders(token),
+        body: JSON.stringify(payload),
+      });
+
+      setMessage(
+        selectedContributorId ? "Contributor updated." : "Contributor created."
+      );
+      setSelectedContributorId("");
+      setContributorForm(emptyContributorForm);
+      await loadAdminData();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   async function updateFeedbackStatus(feedbackId, status) {
     try {
       setError("");
@@ -304,7 +414,8 @@ export function AdminPage() {
         <div>
           <h1>Admin Dashboard</h1>
           <p className="section-intro">
-            Manage banks, banking processes, verification status, and feedback.
+            Manage banks, process data, contributors, verification status, and
+            feedback.
           </p>
         </div>
         <button className="button secondary" type="button" onClick={logout}>
@@ -382,13 +493,19 @@ export function AdminPage() {
 
       <section className="admin-section">
         <h2>Process</h2>
+        <Field label="Search processes">
+          <TextInput
+            value={processSearch}
+            onChange={setProcessSearch}
+          />
+        </Field>
         <Field label="Edit existing process">
           <select
             value={selectedProcessId}
             onChange={(event) => setSelectedProcessId(event.target.value)}
           >
             <option value="">Create new process</option>
-            {processes.map((process) => (
+            {filteredProcesses.map((process) => (
               <option key={process.id} value={process.id}>
                 {process.customer_friendly_title}
               </option>
@@ -490,6 +607,14 @@ export function AdminPage() {
               }
             />
           </Field>
+          <Field label="Form link">
+            <TextInput
+              value={processForm.form_link}
+              onChange={(value) =>
+                setProcessForm((current) => ({ ...current, form_link: value }))
+              }
+            />
+          </Field>
           <Field label="Originals required">
             <select
               value={processForm.originals_required}
@@ -534,6 +659,28 @@ export function AdminPage() {
               <option>No</option>
               <option>Depends</option>
             </select>
+          </Field>
+          <Field label="Branch visit required">
+            <Checkbox
+              checked={processForm.branch_visit_required}
+              onChange={(value) =>
+                setProcessForm((current) => ({
+                  ...current,
+                  branch_visit_required: value,
+                }))
+              }
+            />
+          </Field>
+          <Field label="Online possible">
+            <Checkbox
+              checked={processForm.online_possible}
+              onChange={(value) =>
+                setProcessForm((current) => ({
+                  ...current,
+                  online_possible: value,
+                }))
+              }
+            />
           </Field>
           <Field label="Estimated time">
             <TextInput
@@ -593,6 +740,17 @@ export function AdminPage() {
               }
             />
           </Field>
+          <Field label="Branch variation note">
+            <TextArea
+              value={processForm.branch_variation_note}
+              onChange={(value) =>
+                setProcessForm((current) => ({
+                  ...current,
+                  branch_variation_note: value,
+                }))
+              }
+            />
+          </Field>
           <Field label="Last verified date">
             <TextInput
               type="date"
@@ -610,6 +768,14 @@ export function AdminPage() {
               value={processForm.verified_by}
               onChange={(value) =>
                 setProcessForm((current) => ({ ...current, verified_by: value }))
+              }
+            />
+          </Field>
+          <Field label="Source type">
+            <TextInput
+              value={processForm.source_type}
+              onChange={(value) =>
+                setProcessForm((current) => ({ ...current, source_type: value }))
               }
             />
           </Field>
@@ -643,8 +809,134 @@ export function AdminPage() {
               <option>inactive</option>
             </select>
           </Field>
+          <Field label="Internal notes">
+            <TextArea
+              value={processForm.internal_notes}
+              rows={4}
+              onChange={(value) =>
+                setProcessForm((current) => ({
+                  ...current,
+                  internal_notes: value,
+                }))
+              }
+            />
+          </Field>
+          <Field label="Public notes">
+            <TextArea
+              value={processForm.public_notes}
+              rows={4}
+              onChange={(value) =>
+                setProcessForm((current) => ({
+                  ...current,
+                  public_notes: value,
+                }))
+              }
+            />
+          </Field>
           <button className="button primary" type="submit">
             {selectedProcessId ? "Update Process" : "Create Process"}
+          </button>
+        </form>
+      </section>
+
+      <section className="admin-section">
+        <h2>Contributor</h2>
+        <Field label="Edit existing contributor">
+          <select
+            value={selectedContributorId}
+            onChange={(event) => setSelectedContributorId(event.target.value)}
+          >
+            <option value="">Create new contributor</option>
+            {contributors.map((contributor) => (
+              <option key={contributor.id} value={contributor.id}>
+                {contributor.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <form className="admin-grid" onSubmit={saveContributor}>
+          <Field label="Name">
+            <TextInput
+              value={contributorForm.name}
+              required
+              onChange={(value) =>
+                setContributorForm((current) => ({ ...current, name: value }))
+              }
+            />
+          </Field>
+          <Field label="Role">
+            <TextInput
+              value={contributorForm.role}
+              onChange={(value) =>
+                setContributorForm((current) => ({ ...current, role: value }))
+              }
+            />
+          </Field>
+          <Field label="Bank">
+            <TextInput
+              value={contributorForm.bank}
+              onChange={(value) =>
+                setContributorForm((current) => ({ ...current, bank: value }))
+              }
+            />
+          </Field>
+          <Field label="Branch/city">
+            <TextInput
+              value={contributorForm.branch_city}
+              onChange={(value) =>
+                setContributorForm((current) => ({
+                  ...current,
+                  branch_city: value,
+                }))
+              }
+            />
+          </Field>
+          <Field label="Contact">
+            <TextInput
+              value={contributorForm.contact}
+              onChange={(value) =>
+                setContributorForm((current) => ({ ...current, contact: value }))
+              }
+            />
+          </Field>
+          <Field label="Contribution count">
+            <TextInput
+              type="number"
+              value={contributorForm.contribution_count}
+              onChange={(value) =>
+                setContributorForm((current) => ({
+                  ...current,
+                  contribution_count: value,
+                }))
+              }
+            />
+          </Field>
+          <Field label="Payment status">
+            <TextInput
+              value={contributorForm.payment_status}
+              onChange={(value) =>
+                setContributorForm((current) => ({
+                  ...current,
+                  payment_status: value,
+                }))
+              }
+            />
+          </Field>
+          <Field label="Trust score">
+            <TextInput
+              type="number"
+              value={contributorForm.trust_score}
+              onChange={(value) =>
+                setContributorForm((current) => ({
+                  ...current,
+                  trust_score: value,
+                }))
+              }
+            />
+          </Field>
+          <button className="button primary" type="submit">
+            {selectedContributorId ? "Update Contributor" : "Create Contributor"}
           </button>
         </form>
       </section>
@@ -658,7 +950,7 @@ export function AdminPage() {
             {feedback.map((item) => (
               <article className="feedback-item" key={item.id}>
                 <p>
-                  <strong>{item.feedback_type}</strong> · {item.status}
+                  <strong>{item.feedback_type}</strong> - {item.status}
                 </p>
                 <p>{item.user_feedback}</p>
                 {item.suggested_correction && (

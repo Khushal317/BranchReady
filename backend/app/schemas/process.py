@@ -23,6 +23,7 @@ class ProcessBase(BaseModel):
     employee_steps: str | None = None
     common_rejection_reasons: str | None = None
     escalation_required: str | None = None
+    branch_variation_note: str | None = None
     last_verified_date: date | None = None
     verified_by: str | None = None
     source_type: str | None = None
@@ -56,6 +57,7 @@ class ProcessUpdate(BaseModel):
     employee_steps: str | None = None
     common_rejection_reasons: str | None = None
     escalation_required: str | None = None
+    branch_variation_note: str | None = None
     last_verified_date: date | None = None
     verified_by: str | None = None
     source_type: str | None = None
